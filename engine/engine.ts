@@ -5,7 +5,7 @@ import { LIGHT_COLORS, pickWeighted, rgba } from "./palette";
 import { glowSprite, identityFor, renderOrnament, type OrnamentIdentity, type Sprite } from "./ornaments";
 import { DEFAULT_TREE, halfWidthAt, ornamentSlots, renderTree, type LightPoint, type TreeGeometry } from "./tree";
 import { pack, wrapText } from "./text";
-import { GIFT_LAYOUT, renderGift, type GiftSprite, type PartnerGift } from "./gifts";
+import { GIFT_LAYOUT, renderGift, renderGiftGround, type GiftSprite, type PartnerGift } from "./gifts";
 
 /** Minimal shape the engine needs. Matches PublicWish from the app. */
 export interface EngineWish {
@@ -106,6 +106,7 @@ export class WishTreeEngine {
 
   private gifts: PartnerGift[] = [];
   private giftSprites: GiftSprite[] = [];
+  private giftGround: GiftSprite | null = null;
   private orns = new Map<string, Orn>();
   private slotUsed = new Set<number>();
   private flights: Flight[] = [];
@@ -293,6 +294,7 @@ export class WishTreeEngine {
   }
 
   private buildGifts() {
+    this.giftGround = this.gifts.length ? renderGiftGround(this.px) : null;
     this.giftSprites = this.gifts
       .map((g, i) => renderGift(GIFT_LAYOUT[i], g, this.px, this.opts.fonts.serif))
       .sort((a, b) => a.bottom - b.bottom);
@@ -854,6 +856,7 @@ export class WishTreeEngine {
     if (this.opts.showCards) this.drawLeaders();
     this.drawOrnaments();
     this.drawStar();
+    if (this.giftGround) { const g = this.giftGround; ctx.drawImage(g.canvas, g.x, g.y, g.w, g.h); }
     for (const s of this.giftSprites) ctx.drawImage(s.canvas, s.x, s.y, s.w, s.h);
     this.drawEffects();
     if (this.opts.showCards) {
